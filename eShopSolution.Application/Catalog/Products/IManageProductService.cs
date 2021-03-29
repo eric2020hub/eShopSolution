@@ -1,6 +1,7 @@
 ﻿//using eShopSolution.Application.Catalog.Products.Dtos;
 //using eShopSolution.Application.Catalog.Products.Dtos.Manage;
 //using eShopSolution.Application.Dtos;
+using eShopSolution.ViewModels.Catalog.ProductImages;
 using eShopSolution.ViewModels.Catalog.Products;
 //using eShopSolution.ViewModels.Catalog.Products.Public;
 using eShopSolution.ViewModels.Common;
@@ -18,16 +19,19 @@ namespace eShopSolution.Application.Catalog.Products
         Task<int> Update(ProductUpdateRequest request);
         Task<int> Delete(int productId);
 
+        Task<ProductViewModel> GetById(int productId, string languageId);
+
         Task<bool> UpdatePrice(int productId, decimal newPrice);
 
         Task<bool> UpdateStock(int productId, int addedQuantity);
         Task AddViewCount(int productId);
         //Task<List<ProductViewModel>> GetAll();
-        Task<PageResult<ProductViewModel>> GetAllPaging(GetManageProductPagingRequest reuest);
+        Task<PageResult<ProductViewModel>> GetAllPaging(GetManageProductPagingRequest request);
 
-        Task<int> AddImages(int productId, List<IFormFile> files);
-        Task<int> RemoveImages(int imageId);
-        Task<int> UpdateImages(int image, string caption, bool isDefault);
-        Task<List<ProductImageViewModel>> GetListImage(int productId);
+        Task<int> AddImage(int productId, ProductImageCreateRequest request);
+        Task<int> RemoveImage(int imageId);
+        Task<int> UpdateImage(int imageId, ProductImageUpdateRequest request);
+        Task<ProductImageViewModel> GetImageById(int ImageId);
+        Task<List<ProductImageViewModel>> GetListImages(int productId);
     }
 }
