@@ -22,7 +22,7 @@ namespace eShopSolution.ViewModels.System.Users
                 .MinimumLength(6).WithMessage("Password is at least 6 characters");
 
             RuleFor(x => x).Custom((request, context) => {
-                if (request.PhoneNumber != request.ConfirmPassword)
+                if (request.Password != request.ConfirmPassword)
                 {
                     context.AddFailure("Password is not matched");
                 }
