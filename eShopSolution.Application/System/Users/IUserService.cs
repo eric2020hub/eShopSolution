@@ -18,5 +18,7 @@ namespace eShopSolution.Application.System.Users
         //Task<ApiResult<PageResult<UserVm>>> GetById(Guid id);
         Task<ApiResult<UserVm>> GetById(Guid id);
 
+        Task<ApiResult<bool>> Delete(Guid id);
+
     }
 }
