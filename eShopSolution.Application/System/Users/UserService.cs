@@ -80,7 +80,8 @@ namespace eShopSolution.Application.System.Users
                 FirstName = user.FirstName,
                 Id = user.Id,
                 LastName = user.LastName,
-                Dob = user.Dob
+                Dob = user.Dob,
+                UserName = user.UserName
             };
             return new ApiSuccessResult<UserVm>(userVm);
         }
@@ -110,6 +111,8 @@ namespace eShopSolution.Application.System.Users
             var pageResult = new PageResult<UserVm>()
             {
                 TotalRecord = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
                 Items = data
             };
 
