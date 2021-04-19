@@ -73,20 +73,21 @@ namespace eShopSolution.Application.System.Users
                 return new ApiErrorResult<bool>("User khong ton tai");
             }
             var result = await _userManager.DeleteAsync(user);
-            if(result.Succeeded)
-            return new ApiSuccessResult<bool>();
+            if (result.Succeeded)
+                return new ApiSuccessResult<bool>();
             return new ApiErrorResult<bool>("Delete Unsuccessfully");
         }
 
         //public async Task<ApiResult<PageResult<UserVm>>> GetById(Guid id)
         public async Task<ApiResult<UserVm>> GetById(Guid id)
-        
+
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
-            if(user == null)
+            if (user == null)
             {
                 return new ApiErrorResult<UserVm>("User khong ton tai");
             }
+            var roles = await _userManager.GetRolesAsync(user);
             var userVm = new UserVm()
             {
                 Email = user.Email,
@@ -95,7 +96,8 @@ namespace eShopSolution.Application.System.Users
                 Id = user.Id,
                 LastName = user.LastName,
                 Dob = user.Dob,
-                UserName = user.UserName
+                UserName = user.UserName,
+                Roles = roles
             };
             return new ApiSuccessResult<UserVm>(userVm);
         }
@@ -114,12 +116,12 @@ namespace eShopSolution.Application.System.Users
                 .Take(request.PageSize)
                 .Select(x => new UserVm()
                 {
-                   Email = x.Email,
-                   PhoneNumber = x.PhoneNumber,
-                   UserName = x.UserName,
-                   FirstName = x.FirstName,
-                   Id = x.Id,
-                   LastName = x.LastName,
+                    Email = x.Email,
+                    PhoneNumber = x.PhoneNumber,
+                    UserName = x.UserName,
+                    FirstName = x.FirstName,
+                    Id = x.Id,
+                    LastName = x.LastName,
 
                 }).ToListAsync();
             var pageResult = new PageResult<UserVm>()
@@ -153,7 +155,7 @@ namespace eShopSolution.Application.System.Users
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
                 LastName = request.LastName
-               
+
             };
             var result = await _userManager.CreateAsync(user, request.Password);
             if (result.Succeeded)
@@ -163,9 +165,30 @@ namespace eShopSolution.Application.System.Users
             return new ApiErrorResult<bool>("Dang ky khong thanh cong");
         }
 
+        public async Task<ApiResult<bool>> RoleAssign(Guid id, RoleAssignRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if(user == null)
+            {
+                return new ApiErrorResult<bool>("Tai khoang Khong Ton Tai");
+            }
+            var removedRoled = request.Roles.Where(x => x.Selected == false).Select(x => x.Name).ToList();
+            await _userManager.RemoveFromRolesAsync(user, removedRoled);
+
+            var addedRoles = request.Roles.Where(x => x.Selected == true).Select(x => x.Name).ToList();
+            foreach(var roleName in addedRoles)
+            {
+                if(await _userManager.IsInRoleAsync(user, roleName) == false)
+                {
+                    await _userManager.AddToRoleAsync(user, roleName);
+                }
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
         public async Task<ApiResult<bool>> Update(Guid id, UserUpdateRequest request)
         {
-            if (await _userManager.Users.AnyAsync(x=>x.Email == request.Email && x.Id != id))
+            if (await _userManager.Users.AnyAsync(x => x.Email == request.Email && x.Id != id))
             {
                 return new ApiErrorResult<bool>("Email da ton tai");
             }
@@ -185,7 +208,7 @@ namespace eShopSolution.Application.System.Users
             return new ApiErrorResult<bool>("Update khong thanh cong");
         }
 
-       
+
     }
-    
+
 }
