@@ -31,10 +31,17 @@ namespace eShopSolution.BackendApi.Controllers
         //    return Ok(product);
         //}
         //http://localhost:port/product?pageIndex=1&pageSize=10&CategoryId=
-        [HttpGet("{languageId}")]
-        public async Task<IActionResult> GetAllPaging(string languageId, [FromQuery]GetPublicProductPagingRequest request)
+        //[HttpGet("{languageId}")]
+        //public async Task<IActionResult> GetAllPaging(string languageId, [FromQuery]GetPublicProductPagingRequest request)
+        //{
+        //    var products = await _ProductService.GetAllByCategory(languageId ,request);
+        //    return Ok(products);
+        //}
+
+        [HttpGet("paging")]
+        public async Task<IActionResult> GetAllPaging([FromQuery]GetManageProductPagingRequest request)
         {
-            var products = await _ProductService.GetAllByCategory(languageId ,request);
+            var products = await _ProductService.GetAllPaging(request);
             return Ok(products);
         }
         //http://localhost:port/product/1
@@ -47,6 +54,7 @@ namespace eShopSolution.BackendApi.Controllers
             return Ok(product);
         }
         [HttpPost]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm]ProductCreateRequest request)
         {
             if(!ModelState.IsValid)

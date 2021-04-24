@@ -128,27 +128,29 @@ namespace eShopSolution.Application.Catalog.Products
         //    throw new NotImplementedException();
         //}
 
-        public async Task<PageResult<ProductViewModel>> GetAllPaging(GetManageProductPagingRequest request)
+        public async Task<PageResult<ProductVm>> GetAllPaging(GetManageProductPagingRequest request)
         {
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
-                        join pic in _context.ProductInCategories on p.Id equals pic.ProductId
-                        join c in _context.Categories on pic.CategoryId equals c.Id
-                        select new { p, pt, pic };
+                        //join pic in _context.ProductInCategories on p.Id equals pic.ProductId
+                        //join c in _context.Categories on pic.CategoryId equals c.Id
+                        where pt.LanguageId == request.LanguageId
+                        select new { p, pt/*, pic */};
             if (!string.IsNullOrEmpty(request.Keyword))
                 query = query.Where(x => x.pt.Name.Contains(request.Keyword));
 
-            if (request.CategoryId.Count > 0)
-            {
-                query = query.Where(p => request.CategoryId.Contains(p.pic.CategoryId));
-            }
+            //if (request.CategoryId != null && request.CategoryId.Count > 0)
+            //{
+            //    query = query.Where(p => request.CategoryId.Contains(p.pic.CategoryId));
+            //}
 
             // Paging
             int tottalRow = await query.CountAsync();
 
+            
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ProductViewModel() {
+                .Select(x => new ProductVm() {
                     Id = x.p.Id,
                     Name = x.pt.Name,
                     DateCreated = x.p.DateCreated,
@@ -160,22 +162,25 @@ namespace eShopSolution.Application.Catalog.Products
                     SeoAlias = x.pt.SeoAlias,
                     SeoDescription = x.pt.SeoDescription,
                     SeoTitle = x.pt.SeoTitle,
+                    Stock = x.p.Stock,
                     ViewCount = x.p.ViewCount
                 }).ToListAsync();
             //select and projection
-            var pageResult = new PageResult<ProductViewModel>()
+            var pageResult = new PageResult<ProductVm>()
             {
                 TotalRecord = tottalRow,
+                PageSize = request.PageSize,
+                PageIndex = request.PageIndex,
                 Items = data
             };
             return pageResult;
         }
 
-        public async Task<ProductViewModel> GetById(int productId, string languageId)
+        public async Task<ProductVm> GetById(int productId, string languageId)
         {
             var product = await _context.Products.FindAsync(productId);
             var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productId && x.LanguageId == languageId);
-            var productViewModel = new ProductViewModel()
+            var productViewModel = new ProductVm()
             {
                 Id = product.Id,
                 DateCreated = product.DateCreated,
@@ -316,7 +321,7 @@ namespace eShopSolution.Application.Catalog.Products
         //    throw new NotImplementedException();
         //}
 
-        public async Task<PageResult<ProductViewModel>> GetAllByCategory(string languageId, GetPublicProductPagingRequest request)
+        public async Task<PageResult<ProductVm>> GetAllByCategory(string languageId, GetPublicProductPagingRequest request)
         {
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
@@ -334,7 +339,7 @@ namespace eShopSolution.Application.Catalog.Products
 
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ProductViewModel()
+                .Select(x => new ProductVm()
                 {
                     Id = x.p.Id,
                     Name = x.pt.Name,
@@ -350,11 +355,11 @@ namespace eShopSolution.Application.Catalog.Products
                     ViewCount = x.p.ViewCount
 
                 }).ToListAsync();
-            var pageResult = new PageResult<ProductViewModel>()
+            var pageResult = new PageResult<ProductVm>()
             {
                 TotalRecord = totalRow,
-                PageSize = request.PageSize,
-                PageIndex = request.PageIndex,
+                //PageSize = request.PageSize,
+                //PageIndex = request.PageIndex,
                 Items = data
             };
 
