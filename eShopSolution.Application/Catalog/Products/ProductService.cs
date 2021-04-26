@@ -132,17 +132,17 @@ namespace eShopSolution.Application.Catalog.Products
         {
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
-                        //join pic in _context.ProductInCategories on p.Id equals pic.ProductId
-                        //join c in _context.Categories on pic.CategoryId equals c.Id
+                        join pic in _context.ProductInCategories on p.Id equals pic.ProductId
+                        join c in _context.Categories on pic.CategoryId equals c.Id
                         where pt.LanguageId == request.LanguageId
-                        select new { p, pt/*, pic */};
+                        select new { p, pt, pic };
             if (!string.IsNullOrEmpty(request.Keyword))
                 query = query.Where(x => x.pt.Name.Contains(request.Keyword));
 
-            //if (request.CategoryId != null && request.CategoryId.Count > 0)
-            //{
-            //    query = query.Where(p => request.CategoryId.Contains(p.pic.CategoryId));
-            //}
+            if (request.CategoryId != null && request.CategoryId != 0)
+            {
+                query = query.Where(p => p.pic.CategoryId == request.CategoryId);
+            }
 
             // Paging
             int tottalRow = await query.CountAsync();
@@ -164,6 +164,7 @@ namespace eShopSolution.Application.Catalog.Products
                     SeoTitle = x.pt.SeoTitle,
                     Stock = x.p.Stock,
                     ViewCount = x.p.ViewCount
+                   
                 }).ToListAsync();
             //select and projection
             var pageResult = new PageResult<ProductVm>()
